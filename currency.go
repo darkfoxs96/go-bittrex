@@ -11,4 +11,5 @@ type Currency struct {
 	CoinType        string          `json:"CoinType"`
 	BaseAddress     string          `json:"BaseAddress"`
 	Notice          string          `json:"Notice"`
+	IsRestricted	bool			`json:"IsRestricted"`
 }
