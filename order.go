@@ -18,9 +18,9 @@ type Order struct {
 // For getorder
 type Order2 struct {
 	AccountId                  string
-	OrderUuid                  string `json:"OrderUuid"`
-	Exchange                   string `json:"Exchange"`
-	Type                       string
+	OrderUuid                  string          `json:"OrderUuid"`
+	Exchange                   string          `json:"Exchange"`
+	Type                       string          `json:"OrderType"`
 	Quantity                   decimal.Decimal `json:"Quantity"`
 	QuantityRemaining          decimal.Decimal `json:"QuantityRemaining"`
 	Limit                      decimal.Decimal `json:"Limit"`
