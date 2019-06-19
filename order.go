@@ -13,6 +13,7 @@ type Order struct {
 	Commission        decimal.Decimal `json:"Commission"`
 	Price             decimal.Decimal `json:"Price"`
 	PricePerUnit      decimal.Decimal `json:"PricePerUnit"`
+	Opened            string 		  `json:"Opened,omitempty"`
 }
 
 // For getorder
