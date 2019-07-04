@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha512"
 	"encoding/hex"
+	//"encoding/base64"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -129,6 +130,67 @@ func (c *client) do(method string, resource string, payload string, authNeeded b
 		_, err = mac.Write([]byte(req.URL.String()))
 		sig := hex.EncodeToString(mac.Sum(nil))
 		req.Header.Add("apisign", sig)
+	}
+
+	resp, err := c.doTimeoutRequest(connectTimer, req)
+	if err != nil {
+		return
+	}
+
+	defer resp.Body.Close()
+	response, err = ioutil.ReadAll(resp.Body)
+	//fmt.Println(fmt.Sprintf("reponse %s", response), err)
+	if err != nil {
+		return response, err
+	}
+	if resp.StatusCode != 200 {
+		err = errors.New(resp.Status)
+	}
+	return response, err
+}
+
+// do prepare and process HTTP request to Bittrex API
+func (c *client) doV3(method string, resource string, payload string, authNeeded bool) (response []byte, err error) {
+	connectTimer := time.NewTimer(c.httpTimeout)
+
+	var rawurl string
+	if strings.HasPrefix(resource, "http") {
+		rawurl = resource
+	} else {
+		rawurl = fmt.Sprintf("%s%s/%s", API_BASE_3, API_VERSION_3, resource)
+	}
+
+	req, err := http.NewRequest(method, rawurl, strings.NewReader(payload))
+	if err != nil {
+		return
+	}
+	if method == "POST" || method == "PUT" {
+		req.Header.Add("Content-Type", "application/json;charset=utf-8")
+	}
+	req.Header.Add("Accept", "application/json")
+
+	// Auth
+	if authNeeded {
+		if len(c.apiKey) == 0 || len(c.apiSecret) == 0 {
+			err = errors.New("You need to set API Key and API Secret to call this method")
+			return
+		}
+
+		nonce := time.Now().UnixNano()
+		q := req.URL.Query()
+		req.Header.Add("Api-Key", c.apiKey)
+		timestamp := fmt.Sprintf("%d", nonce / 1000000)
+		req.Header.Add("Api-Timestamp", timestamp)
+		hasher := sha512.New()
+		hasher.Write([]byte(payload))
+		contantHash := hex.EncodeToString(hasher.Sum(nil))
+		req.Header.Add("Api-Content-Hash", contantHash)
+
+		req.URL.RawQuery = q.Encode()
+		mac := hmac.New(sha512.New, []byte(c.apiSecret))
+		_, err = mac.Write([]byte(fmt.Sprintf("%v%v%v%v", timestamp, req.URL.String(), method, contantHash)))
+		sig := hex.EncodeToString(mac.Sum(nil))
+		req.Header.Add("Api-Signature", sig)
 	}
 
 	resp, err := c.doTimeoutRequest(connectTimer, req)

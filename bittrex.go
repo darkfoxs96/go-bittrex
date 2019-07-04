@@ -13,10 +13,12 @@ import (
 )
 
 const (
-	API_BASE    = "https://bittrex.com/api/" // Bittrex API endpoint
-	API_VERSION = "v1.1"
-	WS_BASE     = "socket.bittrex.com" // Bittrex WS API endpoint
-	WS_HUB      = "CoreHub"            // SignalR main hub
+	API_BASE      = "https://bittrex.com/api/" // Bittrex API endpoint
+	API_BASE_3    = "https://api.bittrex.com/" // Bittrex API endpoint
+	API_VERSION   = "v1.1"
+	API_VERSION_3 = "v3"
+	WS_BASE       = "socket.bittrex.com" // Bittrex WS API endpoint
+	WS_HUB        = "CoreHub"            // SignalR main hub
 )
 
 // New returns an instantiated bittrex struct
@@ -268,6 +270,23 @@ func (b *Bittrex) SellLimit(market string, quantity, rate decimal.Decimal) (uuid
 	var u Uuid
 	err = json.Unmarshal(response.Result, &u)
 	uuid = u.Id
+	return
+}
+
+func (b *Bittrex) OrderV3(newOrder *NewOrderV3) (response *OrderV3, err error) {
+	orderJson, err := json.Marshal(newOrder)
+	if err != nil {
+		return
+	}
+
+	r, err := b.client.doV3("POST", "orders", string(orderJson), true)
+	if err != nil {
+		err = fmt.Errorf(err.Error() + " " + string(r))
+		return
+	}
+
+	response = &OrderV3{}
+	err = json.Unmarshal(r, response)
 	return
 }
 
