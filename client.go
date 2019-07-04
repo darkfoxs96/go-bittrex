@@ -204,7 +204,7 @@ func (c *client) doV3(method string, resource string, payload string, authNeeded
 	if err != nil {
 		return response, err
 	}
-	if resp.StatusCode != 200 {
+	if resp.StatusCode < 200 && resp.StatusCode > 299 {
 		err = errors.New(resp.Status)
 	}
 	return response, err
