@@ -75,4 +75,6 @@ type OrderV3 struct {
 	CreatedAt     time.Time       `json:"createdAt"`
 	UpdatedAt     time.Time       `json:"updatedAt"`
 	ClosedAt      time.Time       `json:"closedAt"`
+	Error         string          `json:"error"`
+	Code          string          `json:"code"`
 }

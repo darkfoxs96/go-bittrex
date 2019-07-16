@@ -287,6 +287,19 @@ func (b *Bittrex) OrderV3(newOrder *NewOrderV3) (response *OrderV3, err error) {
 
 	response = &OrderV3{}
 	err = json.Unmarshal(r, response)
+
+	if err != nil {
+		return
+	}
+	if response.Code != "" {
+		err = fmt.Errorf(response.Code)
+		return
+	}
+	if response.Error != "" {
+		err = fmt.Errorf(response.Error)
+		return
+	}
+
 	return
 }
 
